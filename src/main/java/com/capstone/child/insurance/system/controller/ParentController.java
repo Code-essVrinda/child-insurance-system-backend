@@ -5,7 +5,6 @@ import java.util.Collection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,90 +19,64 @@ import com.capstone.child.insurance.system.entity.Parent;
 import com.capstone.child.insurance.system.exceptions.ParentException;
 import com.capstone.child.insurance.system.service.ParentService;
 
-//@CrossOrigin(origins="http://localhost:4200/")
-
-@CrossOrigin(allowedHeaders="*" , origins = "*")
+// CORS is now handled in one place (SecurityConfig), so no @CrossOrigin here.
 @RestController
-@RequestMapping("/api/v1/user")
+@RequestMapping("/api/v1/parents")
 public class ParentController {
-	
+
 	@Autowired
 	ParentService parentService;
 
-	
-	// Demo
-	
-	@GetMapping("/")
-	public String greet() {
-		return "Child Insurence Management System.";
-	}
-	
-	// ADMIN
-
-	@PostMapping("/")
-	public String createAdmin(@RequestBody Parent parent) {
-		this.parentService.save(parent);
-		return "Welcome to Child Insurance Management System.";
-	}
-	
-
-	
-	// PARENT
-	
-	@PostMapping("/parent/")
+	// add a new parent
+	@PostMapping
 	public Parent addParent(@RequestBody Parent newParent) throws ParentException {
 		try {
-		return this.parentService.addParent(newParent);
+			return this.parentService.addParent(newParent);
 		}
 		catch(ParentException e) {
 			throw e;
 		}
-
 	}
-	
 
-	@GetMapping("/parent/{parentId}")
+	// get one parent by id
+	@GetMapping("/{parentId}")
 	public Parent getParentById(@PathVariable("parentId") Integer parentId) throws ParentException {
 		try {
-		return this.parentService.getParentById(parentId);}
+			return this.parentService.getParentById(parentId);
+		}
 		catch(ParentException e) {
 			throw e;
 		}
-		
 	}
-	
-	@PutMapping("/parent/{parentId}")
+
+	// update a parent
+	@PutMapping("/{parentId}")
 	public ResponseEntity<Parent> updateParent(@PathVariable("parentId") Integer parentId , @RequestBody Parent parent) throws ParentException {
 		Parent updateParent = parentService.updateParent(parent);
-		
+
 		if(updateParent == null) {
 			return ResponseEntity.notFound().build();
 		}
 		return ResponseEntity.ok(updateParent);
 	}
-	
 
-	
+	// activate or deactivate a parent account
 	@PatchMapping("/{parentId}/status")
 	public ResponseEntity<Boolean> updateParentStatus(@PathVariable Integer parentId , @RequestParam boolean active) throws ParentException {
 	    boolean status = parentService.updateParentStatus(parentId , active);
 	    return ResponseEntity.ok(status);
 	}
-	
-	
-	
-	@GetMapping("/getAllParents/")
+
+	// get all parents (used by admin)
+	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
 	public Collection<Parent> getAllParents() {
 		Collection<Parent> parentCollection = this.parentService.getAllParents();
 		return parentCollection;
 	}
-	
-	
-	
-	
-	// PARENT LOGIN
-    @PostMapping("/parent/login")
+
+	// parent login
+    @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
     public Parent loginParent(@RequestBody Parent parent) throws ParentException {
         try {
@@ -113,6 +86,5 @@ public class ParentController {
         catch(ParentException e) {
 			throw e;
         }
-
     }
 }

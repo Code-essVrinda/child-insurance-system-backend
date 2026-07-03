@@ -16,11 +16,7 @@ public interface ParentService {
 	boolean updateParentStatus(Integer parentId, boolean active) throws ParentException;
 	
 	Collection<Parent> getAllParents(); //For Admin
-	
-	void save(Parent parent);
-	
-	///////
-	
+
 	Parent login(Parent parent) throws ParentException;
 	
 	

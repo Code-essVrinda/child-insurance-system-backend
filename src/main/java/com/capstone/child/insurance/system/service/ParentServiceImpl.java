@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.capstone.child.insurance.system.dao.ParentRepository;
@@ -16,11 +17,17 @@ public class ParentServiceImpl implements ParentService{
 	@Autowired
 	ParentRepository parentRepository;
 
+	// used to hash the password (BCrypt). the bean is in SecurityConfig
+	@Autowired
+	PasswordEncoder passwordEncoder;
+
 	@Override
 	public Parent addParent(Parent newParent) throws ParentException {
-		
+
+		// hash the password before saving so we never store plain text
+		newParent.setPassword(this.passwordEncoder.encode(newParent.getPassword()));
 		return this.parentRepository.save(newParent);
-		
+
 	}
 
 	@Override	
@@ -30,10 +37,11 @@ public class ParentServiceImpl implements ParentService{
 		if (!parentOpt.isPresent())
 			throw new ParentException("Parent not found for id:" + id);
 		Parent parent = parentOpt.get();
-		if(parent.getAccountActive()!=true) {
+		// use Boolean.TRUE.equals so it does not crash when accountActive is null
+		if(!Boolean.TRUE.equals(parent.getAccountActive())) {
 		throw new ParentException("User Account is not active");}
-		
-		
+
+
 		return parentOpt.get();
 	}
 
@@ -70,26 +78,21 @@ public class ParentServiceImpl implements ParentService{
 
 	
 	@Override
-	public void save(Parent parent) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public Parent login(Parent parent) throws ParentException {
 		Optional<Parent> findParent = Optional.ofNullable(this.parentRepository.findByEmail(parent.getEmail()));
 		if(!findParent.isPresent()) {
 			throw new ParentException("User Not Found");
 		}
-		
-		if(findParent.get().getPassword().equals(parent.getPassword())) {
+
+		// the stored password is hashed, so we match the raw one against the hash
+		if(this.passwordEncoder.matches(parent.getPassword(), findParent.get().getPassword())) {
 			return findParent.get();
 
 		}
 		else {
 			throw new ParentException("Incorrect Password");
 		}
-		
+
 	}
 	
 

@@ -5,7 +5,6 @@ import java.util.Collection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,60 +19,48 @@ import com.capstone.child.insurance.system.entity.Child;
 import com.capstone.child.insurance.system.exceptions.ChildException;
 import com.capstone.child.insurance.system.service.ChildService;
 
-//@CrossOrigin(origins="http://localhost:4200/child-registration")
-
-@CrossOrigin(allowedHeaders="*" , origins = "*")
+// children always belong to a parent, so the path is nested under parents.
+// CORS is handled in SecurityConfig now.
 @RestController
 @RequestMapping("/api/v1/parents/{parentId}/children")
-
 public class ChildController {
-	
+
 	@Autowired
 	ChildService childService;
-	
-	// Get child by Id
-	@GetMapping("/child/{childId}")
+
+	// get one child by id
+	@GetMapping("/{childId}")
 	public Child getChildByChildId(@PathVariable("childId") Integer childId) throws ChildException {
 		return this.childService.getChildByChildId(childId);
-		
 	}
 
-	// Get all children for parentId
-	@GetMapping("/getAllChildren/")
+	// get all children of a parent
+	@GetMapping
 	public ResponseEntity<Collection<Child>> getAllChildrenByParentId(@PathVariable Integer parentId) {
 		Collection<Child> children = childService.getAllChildrenByParentId(parentId);
 		return ResponseEntity.ok(children);
 	}
-	
-	
-	// add child by parent Id
+
+	// add a child to a parent
 	@PostMapping
 	public ResponseEntity<Child> addChildByParentId(@PathVariable Integer parentId , @RequestBody Child newChild) throws ChildException {
 		Child addedChild = childService.addChildByParentId(parentId , newChild);
 		return ResponseEntity.status(HttpStatus.CREATED).body(addedChild);
 	}
-	
-	
-	
-	@PutMapping("/")
-	public ResponseEntity<Child> updateChildByChildId(@PathVariable Integer parentId, @RequestBody Child child) throws ChildException {
+
+	// update a child
+	@PutMapping("/{childId}")
+	public ResponseEntity<Child> updateChildByChildId(@PathVariable Integer parentId, @PathVariable Integer childId, @RequestBody Child child) throws ChildException {
+		// take the id from the url so the body and url can not disagree
+		child.setChildId(childId);
 		Child updateChild =  childService.updateChildByChildId(child,parentId);
-//		
-//		if(updateChild == null) {
-//			return ResponseEntity.notFound().build();
-//		}
 		return ResponseEntity.ok(updateChild);
 	}
-	
-	
-	// Activate
-	
+
+	// activate or deactivate a child
 	@PatchMapping("/{childId}/status")
 	public ResponseEntity<Boolean> updateChildStatus(@PathVariable Integer childId , @RequestParam boolean active) throws ChildException {
 	    boolean status = childService.updateChildStatus(childId , active);
 	    return ResponseEntity.ok(status);
 	}
-	
-	
-	
 }

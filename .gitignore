@@ -4,6 +4,13 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# macOS junk files
+.DS_Store
+**/.DS_Store
+
+# compiled output, should not be in git
+bin/
+
 ### STS ###
 .apt_generated
 .classpath

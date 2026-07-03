@@ -3,7 +3,6 @@ package com.capstone.child.insurance.system.controller;
 import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,46 +15,35 @@ import com.capstone.child.insurance.system.exceptions.ChildPolicyEnrollmentExcep
 import com.capstone.child.insurance.system.exceptions.PaymentException;
 import com.capstone.child.insurance.system.service.PaymentService;
 
-import jakarta.annotation.security.PermitAll;
-
-@RequestMapping("/api/v1/user")
+// CORS is handled in SecurityConfig now.
+@RequestMapping("/api/v1/payments")
 @RestController
-@CrossOrigin(origins="http://localhost:4200/")
 public class PaymentController {
 
 	@Autowired
 	private PaymentService paymentService;
 
-//	@GetMapping("/")
-//	public String getGreeting() {
-//		return "welcome to payment!";
-//	}
-
-	@PostMapping("/payment/{enrollment_id}")
-	public Payment addPayment(@RequestBody Payment newPayment,@PathVariable("enrollment_id") Integer EnrollmentId) throws ChildPolicyEnrollmentException{
-
-		return this.paymentService.addPayment(newPayment, EnrollmentId);
-
+	// add a payment for an enrollment
+	@PostMapping("/enrollments/{enrollmentId}")
+	public Payment addPayment(@RequestBody Payment newPayment,@PathVariable("enrollmentId") Integer enrollmentId) throws ChildPolicyEnrollmentException{
+		return this.paymentService.addPayment(newPayment, enrollmentId);
 	}
 
-	@GetMapping("/getall")
+	// get all payments
+	@GetMapping
 	public Collection<Payment> getPayments() throws PaymentException {
-		
 		return this.paymentService.getPayments();
 	}
-	
-	@GetMapping("/findall/{enrollment_id}")
-	public Collection<Payment> getAllPayments(@PathVariable("enrollment_id") Integer id) throws PaymentException, ChildPolicyEnrollmentException{
+
+	// get all payments of one enrollment
+	@GetMapping("/enrollments/{enrollmentId}")
+	public Collection<Payment> getAllPayments(@PathVariable("enrollmentId") Integer id) throws PaymentException, ChildPolicyEnrollmentException{
 		return this.paymentService.getAllPayments(id);
-		
 	}
-	
-	@GetMapping("/createTransaction/{amount}")
-    public TransactionDetail createTransaction(@PathVariable (name="amount")Integer amount) {
+
+	// create a razorpay transaction for the given amount
+	@PostMapping("/transactions/{amount}")
+    public TransactionDetail createTransaction(@PathVariable(name="amount") Integer amount) {
 		return paymentService.createTransactionAmount(amount);
-
-		    }
-		
 	}
-
-
+}

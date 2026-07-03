@@ -2,7 +2,6 @@ package com.capstone.child.insurance.system.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,49 +16,38 @@ import com.capstone.child.insurance.system.exceptions.AdminException;
 import com.capstone.child.insurance.system.service.AdminService;
 
 
-@CrossOrigin(origins="http://localhost:4200/")
-@RequestMapping("/api/v1/admin")
+// CORS is handled in SecurityConfig now.
+@RequestMapping("/api/v1/admins")
 @RestController
 public class AdminController {
-	
+
 
 	@Autowired
      AdminService adminService;
-	
-	
-	@GetMapping("/")
-	public String greetAdmin() {
-		return "Child Insurence Management System.";
-	}
-	
-	
-	// get by id
-	
+
+	// get one admin by id
 	@GetMapping("/{adminId}")
 	public Admin getAdminById(@PathVariable("adminId") Integer adminId) throws AdminException {
 		try {
-		return this.adminService.getAdminById(adminId);}
+			return this.adminService.getAdminById(adminId);
+		}
 		catch(AdminException e) {
 			throw e;
 		}
-		
 	}
-	
-	@PostMapping("/")
+
+	// add a new admin
+	@PostMapping
 	public Admin addAdmin(@RequestBody Admin newAdmin) throws AdminException {
 		try {
-		return this.adminService.addAdmin(newAdmin);
+			return this.adminService.addAdmin(newAdmin);
 		}
 		catch(AdminException e) {
 			throw e;
 		}
-
 	}
-	
-	
-	
-	
-	// Admin LOGIN
+
+	// admin login
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
     public Admin loginAdmin(@RequestBody Admin admin) throws AdminException {
@@ -70,7 +58,5 @@ public class AdminController {
         catch(AdminException e) {
 			throw e;
         }
-
     }
-
 }

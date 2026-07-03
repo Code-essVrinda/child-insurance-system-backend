@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.capstone.child.insurance.system.dao.ChildPolicyEnrollmentRepository;
 import com.capstone.child.insurance.system.dao.PaymentRepository;
@@ -23,8 +24,14 @@ import com.razorpay.RazorpayException;
 @Service
 public class PaymentServiceImpl implements PaymentService {
 
-	private static final String Key = "rzp_test_VbC7NGr6egY8lJ";
-	private static final String Key_Secret = "RQd8f4zAYIveDzTtKFR97Kt1";
+	// keys are read from application.properties (which reads them from env vars).
+	// this way we do not keep secret keys inside the code.
+	@Value("${razorpay.key.id}")
+	private String key;
+
+	@Value("${razorpay.key.secret}")
+	private String keySecret;
+
 	private static final String currency = "INR";
 
 	@Autowired
@@ -93,7 +100,7 @@ public class PaymentServiceImpl implements PaymentService {
 			jsonObject.put("amount", (amount * 100));
 			jsonObject.put("currency", currency);
 
-			RazorpayClient razorpayClient = new RazorpayClient(Key, Key_Secret);
+			RazorpayClient razorpayClient = new RazorpayClient(key, keySecret);
 			Order order = razorpayClient.orders.create(jsonObject);
 
 			TransactionDetail transactionDetails = prepareTransactionDetails(order);
@@ -115,7 +122,7 @@ public class PaymentServiceImpl implements PaymentService {
 		String orderId = order.get("id");
 		String currency = order.get("currency");
 		Integer amount = order.get("amount");
-		TransactionDetail transactionDetails = new TransactionDetail(orderId, currency, amount, Key);
+		TransactionDetail transactionDetails = new TransactionDetail(orderId, currency, amount, key);
 		return transactionDetails;
 
 	}

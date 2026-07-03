@@ -3,7 +3,7 @@ package com.capstone.child.insurance.system.service;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.capstone.child.insurance.system.dao.AdminRepository;
@@ -14,17 +14,23 @@ import com.capstone.child.insurance.system.exceptions.AdminException;
 
 
 
-@Service 
+@Service
 public class AdminServiceImpl implements AdminService{
-	
+
 	@Autowired
 	AdminRepository adminRepository;
 
+	// used to hash the admin password (BCrypt). the bean is in SecurityConfig
+	@Autowired
+	PasswordEncoder passwordEncoder;
+
 	@Override
 	public Admin addAdmin(Admin newAdmin) throws AdminException {
-		
+
+		// hash the password before saving so we never store plain text
+		newAdmin.setPassword(this.passwordEncoder.encode(newAdmin.getPassword()));
 		return this.adminRepository.save(newAdmin);
-		
+
 	}
 
 
@@ -49,7 +55,8 @@ public class AdminServiceImpl implements AdminService{
 			throw new AdminException("Admin Not Found");
 		}
 		
-		if(findAdmin.get().getPassword().equals(newAdmin.getPassword())) {
+		// the stored password is hashed, so we match the raw one against the hash
+		if(this.passwordEncoder.matches(newAdmin.getPassword(), findAdmin.get().getPassword())) {
 			return findAdmin.get();
 
 		}
