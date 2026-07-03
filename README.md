@@ -25,6 +25,7 @@ The frontend is a separate project. This repo is only the backend (REST API).
 - [Configuration](#configuration)
 - [API Endpoints](#api-endpoints)
 - [Data Model](#data-model)
+- [Security](#security)
 - [Author](#author)
 
 ---
@@ -178,20 +179,16 @@ Main entities:
 
 ---
 
-## Security Notes
+## Security
 
-Some things I already fixed:
+- Passwords are hashed with BCrypt before saving. Login checks the raw
+  password against the hash.
+- Secret keys (database, email, Razorpay) are read from environment
+  variables, not kept in the code.
+- Spring Security handles the setup and CORS is set in one place.
 
-- Passwords are now hashed with BCrypt (not plain text anymore).
-- Razorpay keys and the DB password are read from environment variables,
-  not written in the code.
-- Spring Security is added and all CORS is set in one place.
-- Java version in `pom.xml` is now 17 (needed for Spring Boot 3).
-
-Still to do (future work):
-
-- Endpoints are open for now. Login works but there is no real token
-  auth yet. Next step is to add JWT and lock the endpoints.
+Note: the login is custom (no JWT yet), so the API endpoints are open
+for now. Adding token based auth is a good next step.
 
 ---
 
